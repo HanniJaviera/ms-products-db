@@ -11,8 +11,8 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI apiInfo(){
         return new OpenAPI()
-                   .info(new Info().title("API de Prueba DuocUC - FullStack")
-                                    .description("Esta es una api de prueba...")
+                   .info(new Info().title("Documentación Product DB")
+                                    .description("A continuación pueder ver los métodos a utilizar")
                                     .version("1.0.0"));
     }
 
