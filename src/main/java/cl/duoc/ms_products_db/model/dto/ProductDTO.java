@@ -1,6 +1,6 @@
 package cl.duoc.ms_products_db.model.dto;
 
-//import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List; // <--- Importante para la galería
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,18 +15,19 @@ import lombok.ToString;
 @ToString
 public class ProductDTO {
 
-    //@JsonProperty(value = "producto_id")
     private Long id;
 
-    //@JsonProperty(value = "producto_nombre")
-    private String nombreProduct;
+    private String title;       
 
-    //@JsonProperty(value = "producto_descripcion")
-    private String descripcion;
+    private String description;  
 
-    //@JsonProperty(value = "producto_cantidad")
-    private Long cantidad;
+    private Double price;       
 
-    //@JsonProperty(value = "producto_precio")
-    private Long precio;
+    private String imageSrc;    
+
+    private String categoria;    
+
+    private String infoPage;     
+
+    private List<String> gallery; 
 }

@@ -2,6 +2,7 @@ package cl.duoc.ms_products_db.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,7 @@ public class ProductService {
     @Autowired
     ProductRepository productRepository;
 
-
-     public ProductDTO findProductById(Long id){
+    public ProductDTO findProductById(Long id){
         Optional<Product> product = productRepository.findById(id);       
         ProductDTO productDto = null;
 
@@ -28,29 +28,41 @@ public class ProductService {
         return productDto;
     }
 
-     public ProductDTO translateEntityToDto(Product product){
+
+    public ProductDTO translateEntityToDto(Product product){
         ProductDTO productDTO = new ProductDTO();
         productDTO.setId(product.getId());
-        productDTO.setNombreProduct(product.getNombreProduct());
-        productDTO.setDescripcion(product.getDescripcion());
-        productDTO.setCantidad(product.getCantidad());
-        productDTO.setPrecio(product.getPrecio());
+        productDTO.setTitle(product.getTitle());          
+        productDTO.setDescription(product.getDescription()); 
+        productDTO.setPrice(product.getPrice());          
+        productDTO.setImageSrc(product.getImageSrc());    
+        productDTO.setCategoria(product.getCategoria()); 
+        productDTO.setInfoPage(product.getInfoPage());    
+        productDTO.setGallery(product.getGallery());      
+        
+
         return productDTO;
     }
 
-    public List<Product> selectAllProduct(){
+
+    public List<ProductDTO> selectAllProduct(){
         List<Product> listaProducts = productRepository.findAll();
-        return listaProducts;
+        return listaProducts.stream()
+                            .map(this::translateEntityToDto)
+                            .collect(Collectors.toList());
     }
 
-        // Convierte ProductDTO a entidad Product
+
     public Product translateDtoToEntity(ProductDTO productDTO){
         Product product = new Product();
-        // El ID generalmente es generado por la DB, por lo que no lo configuramos para la creación
-        product.setNombreProduct(productDTO.getNombreProduct());
-        product.setDescripcion(productDTO.getDescripcion());
-        product.setCantidad(productDTO.getCantidad());
-        product.setPrecio(productDTO.getPrecio());
+        product.setTitle(productDTO.getTitle());
+        product.setDescription(productDTO.getDescription()); 
+        product.setPrice(productDTO.getPrice());           
+        product.setImageSrc(productDTO.getImageSrc());
+        product.setCategoria(productDTO.getCategoria());
+        product.setInfoPage(productDTO.getInfoPage());
+        product.setGallery(productDTO.getGallery());
+        
         return product;
     }
 
@@ -65,30 +77,34 @@ public class ProductService {
         return newProductDTO;
     }
 
-    @Transactional //Es fundamental para operaciones de escritura en la base de datos. Asegura que la eliminación se realice de forma segura y atómica.
+    @Transactional
     public boolean deleteProduct(Long id) {
-        // Primero, verifica si el producto existe
         if (productRepository.existsById(id)) {
             productRepository.deleteById(id);
-            return true; // Indica que se eliminó correctamente
+            return true;
         }
-        return false; // Indica que el producto no fue encontrado
+        return false;
     }
 
-        @Transactional 
-        public ProductDTO updateProduct(Long id, ProductDTO productDTO) {
+    @Transactional 
+    public ProductDTO updateProduct(Long id, ProductDTO productDTO) {
         Optional<Product> existingProductOptional = productRepository.findById(id);
 
         if (existingProductOptional.isPresent()) {
             Product existingProduct = existingProductOptional.get();
-            existingProduct.setNombreProduct(productDTO.getNombreProduct());
-            existingProduct.setDescripcion(productDTO.getDescripcion());
-            existingProduct.setCantidad(productDTO.getCantidad());
-            existingProduct.setPrecio(productDTO.getPrecio());
+            
+
+            existingProduct.setTitle(productDTO.getTitle());
+            existingProduct.setDescription(productDTO.getDescription()); 
+            existingProduct.setPrice(productDTO.getPrice());          
+            existingProduct.setImageSrc(productDTO.getImageSrc());
+            existingProduct.setCategoria(productDTO.getCategoria());
+            existingProduct.setInfoPage(productDTO.getInfoPage());
+            existingProduct.setGallery(productDTO.getGallery());
+
             Product updatedProduct = productRepository.save(existingProduct); 
             return translateEntityToDto(updatedProduct);
         } else {
-            // Si el producto no fue encontrado, retorna null
             return null;
         }
     }

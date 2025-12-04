@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cl.duoc.ms_products_db.model.dto.ProductDTO;
-import cl.duoc.ms_products_db.model.entities.Product;
 import cl.duoc.ms_products_db.service.ProductService;
 
 
@@ -35,13 +34,12 @@ public class ProductController {
                                          new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } 
         @GetMapping("")
-        public List<Product> selectAllProduct() {
+        public List<ProductDTO> selectAllProduct() {
             return productService.selectAllProduct();
         }    
         @PostMapping
         public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductDTO productDTO) {
             ProductDTO createdProduct = productService.createProduct(productDTO);
-        // Devuelve el producto creado con un estado HTTP 201 (Created)
             return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }    
 
@@ -49,10 +47,8 @@ public class ProductController {
         public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
              boolean deleted = productService.deleteProduct(id);
                  if (deleted) {
-                         // Retorna un mensaje de éxito con estado 200 OK
                      return new ResponseEntity<>("Producto Eliminado", HttpStatus.OK);
                     } else {
-                         // Retorna un mensaje de error con estado 404 Not Found
                         return new ResponseEntity<>("Producto no encontrado", HttpStatus.NOT_FOUND);
         }
     }
@@ -60,10 +56,8 @@ public class ProductController {
         public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO) {
              ProductDTO updatedProduct = productService.updateProduct(id, productDTO);
              if (updatedProduct != null) {
-            // Retorna el producto actualizado con estado 200 OK
                  return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
              } else {
-            // Si el producto no fue encontrado, retorna 404 Not Found
                  return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }

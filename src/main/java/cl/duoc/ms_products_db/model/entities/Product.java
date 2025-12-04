@@ -1,18 +1,14 @@
 package cl.duoc.ms_products_db.model.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.util.List;
 
 @Entity
-@Table(name= "product")
+@Table(name = "product")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -21,19 +17,30 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="idproduct")
+    @Column(name = "id")
     private Long id;
 
-    @Column(name="nombreproduct")
-    private String nombreProduct;
+    @Column(name = "title")
+    private String title;        
 
-    @Column(name="descripcion")
-    private String descripcion;
+    @Column(name = "price")
+    private Double price;        
 
-    @Column(name="cantidad")
-    private Long cantidad;
+    @Column(name = "image_src")
+    private String imageSrc;   
 
-    @Column(name="precio")
-    private Long precio;
+    @Column(name = "info_page")
+    private String infoPage;     
 
+    @Column(name = "categoria")
+    private String categoria;   
+
+    @Column(name = "description", length = 1000) 
+    private String description;  
+
+
+    @ElementCollection
+    @CollectionTable(name = "product_gallery", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image_url")
+    private List<String> gallery;  
 }
