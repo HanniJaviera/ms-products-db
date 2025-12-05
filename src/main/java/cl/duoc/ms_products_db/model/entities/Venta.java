@@ -1,7 +1,6 @@
 package cl.duoc.ms_products_db.model.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString; 
@@ -24,4 +23,15 @@ public class Venta {
     @Column(name = "correo_usuario")
     private String correoUsuario;
 
+    @Column(name = "direccion")
+    private String direccion;
+
+    @Column(name = "comuna")
+    private String comuna;
+
+    @Column(name = "region")
+    private String region;
+
+    @Column(name = "total")
+    private Integer total;
 }
