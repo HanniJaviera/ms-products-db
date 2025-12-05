@@ -49,4 +49,8 @@ public class UsuarioService {
             return false;
         }
     }
+
+    public Usuario validarLogin(String correo, String password) {
+    return usuarioRepository.findByCorreoAndPassword(correo, password);
+}
 }

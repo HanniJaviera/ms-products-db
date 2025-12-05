@@ -65,4 +65,15 @@ public class UsuarioController {
             return new ResponseEntity<>("Usuario no encontrado", HttpStatus.NOT_FOUND);
         }
     }
+    @PostMapping("/login")
+    public ResponseEntity<Usuario> login(@RequestBody Usuario usuario) {
+    // Buscamos si existe alguien con ese correo y contraseña
+    Usuario usuarioEncontrado = usuarioService.validarLogin(usuario.getCorreo(), usuario.getPassword());
+
+    if (usuarioEncontrado != null) {
+        return new ResponseEntity<>(usuarioEncontrado, HttpStatus.OK);
+    } else {
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED); // 401 No autorizado
+    }
+}
 }
