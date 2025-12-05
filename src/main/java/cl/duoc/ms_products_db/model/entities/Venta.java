@@ -26,12 +26,6 @@ public class Venta {
     @Column(name = "direccion")
     private String direccion;
 
-    @Column(name = "comuna")
-    private String comuna;
-
-    @Column(name = "region")
-    private String region;
-
     @Column(name = "total")
     private Integer total;
 }

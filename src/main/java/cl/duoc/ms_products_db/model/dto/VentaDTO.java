@@ -23,11 +23,6 @@ public class VentaDTO {
     @JsonProperty(value = "direccion")
     private String direccion;
 
-    @JsonProperty(value = "comuna")
-    private String comuna;
-
-    @JsonProperty(value = "region")
-    private String region;
 
     @JsonProperty(value = "total")
     private Integer total;
