@@ -53,4 +53,9 @@ public class UsuarioService {
     public Usuario validarLogin(String correo, String password) {
     return usuarioRepository.findByCorreoAndPassword(correo, password);
 }
+
+public Usuario buscarPorCorreo(String correo) {
+    // Asumiendo que tu repositorio tiene findByCorreo
+    return usuarioRepository.findByCorreo(correo); 
+}
 }

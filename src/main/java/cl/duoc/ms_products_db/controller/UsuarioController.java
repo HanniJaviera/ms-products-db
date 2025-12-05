@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -76,4 +77,16 @@ public class UsuarioController {
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED); // 401 No autorizado
     }
 }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<Usuario> buscarPorCorreo(@RequestParam("correo") String correo) {
+        // Asegúrate de que tu UsuarioService tenga este método implementado
+        Usuario usuario = usuarioService.buscarPorCorreo(correo); 
+        
+        if (usuario != null) {
+            return new ResponseEntity<>(usuario, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }
