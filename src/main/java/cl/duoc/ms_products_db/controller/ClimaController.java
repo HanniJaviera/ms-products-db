@@ -26,15 +26,27 @@ public class ClimaController {
         }
 
         try {
+            // 2. Llamamos al servicio para obtener los datos
             Map<String, Object> clima = climaService.obtenerClima(ciudad);
 
             if (clima != null) {
+                // 3. Éxito: Devolvemos los datos (HTTP 200)
                 return ResponseEntity.ok(clima);
             } else {
+                // 4. Fallo: No se encontró la ciudad o hubo error en la API externa (HTTP 404)
                 return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", "Error interno al procesar el clima"));
+            // 5. Error interno no controlado (HTTP 500)
+            // IMPRIMIMOS EL ERROR EN CONSOLA PARA DEPURAR
+            System.err.println("--- ERROR EN CLIMACONTROLLER ---");
+            e.printStackTrace();
+            
+            // Devolvemos el detalle del error para saber el problema
+            return ResponseEntity.internalServerError().body(Map.of(
+                "error", "Error interno al procesar el clima",
+                "mensaje", e.getMessage() != null ? e.getMessage() : "Excepción desconocida"
+            ));
         }
     }
 }
