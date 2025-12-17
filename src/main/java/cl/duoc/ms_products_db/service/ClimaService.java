@@ -11,8 +11,11 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class ClimaService {
 
-    @Value("${METEORED_API_KEY}")
+    @Value("${meteored.api.key}")
     private String apiKey;
+
+    @Value("${meteored.api.url}")
+    private String apiUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
