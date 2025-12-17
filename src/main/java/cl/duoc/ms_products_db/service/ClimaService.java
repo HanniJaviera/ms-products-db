@@ -8,11 +8,11 @@ import org.springframework.web.client.RestTemplate;
 public class ClimaService {
 
     @Value("${METEORED_API_KEY}")
-private String apiKey;
+    private String apiKey;
 
     @Value("${METEORED_API_URL}")
     private String apiUrl;
-    
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String obtenerClima(String ciudad) {
