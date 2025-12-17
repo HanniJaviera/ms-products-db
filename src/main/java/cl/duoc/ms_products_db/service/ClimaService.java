@@ -2,6 +2,7 @@ package cl.duoc.ms_products_db.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
@@ -9,9 +10,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 @Service
 public class ClimaService {
 
+    // Asegúrate de tener esto en application.properties:
+    // weather.api.key=404fe577ee8921c5b902a764daca8b81eed6e5c30f6bf18eee2585a3d7f112d3
     @Value("${weather.api.key}")
     private String apiKey;
 
@@ -21,11 +25,17 @@ public class ClimaService {
         RestTemplate restTemplate = new RestTemplate();
         Map<String, Object> respuestaFinal = new HashMap<>();
 
- try {
-            //UTF-8 encode ciudad
+        try {
+            // ---------------------------------------------------
+            // PASO CRÍTICO: CODIFICACIÓN UTF-8
+            // Convertimos "Concepción" -> "Concepci%C3%B3n"
+            // Esto evita el error 500 al llamar a la API externa.
+            // ---------------------------------------------------
             String ciudadEncoded = URLEncoder.encode(ciudad, StandardCharsets.UTF_8.toString());
 
-            // Buscar la ciudad para obtener su ID
+            // ---------------------------------------------------
+            // PASO 1: Buscar ID de la ciudad
+            // ---------------------------------------------------
             String searchUrl = String.format("%s/api/location/v1/search/txt/%s?apikey=%s",
                     BASE_URL, ciudadEncoded, apiKey);
 
@@ -41,7 +51,7 @@ public class ClimaService {
 
             Map<String, Object> location = searchResult.get(0);
             
-            // Obtener ID con fallback 
+            // Obtener ID con fallback (puede ser 'id' o 'key')
             Object idObj = location.get("id");
             if (idObj == null) idObj = location.get("key");
             
@@ -50,7 +60,9 @@ public class ClimaService {
             String locationId = idObj.toString();
             String locationName = (String) location.get("name");
 
-            //obtener clima actual usando el ID
+            // ---------------------------------------------------
+            // PASO 2: Obtener Clima Actual
+            // ---------------------------------------------------
             String weatherUrl = String.format("%s/api/weather/current/%s?apikey=%s",
                     BASE_URL, locationId, apiKey);
 
@@ -58,7 +70,9 @@ public class ClimaService {
             
             if (weatherData == null) return null;
 
-            //respuestas variables con fallback
+            // ---------------------------------------------------
+            // PASO 3: Normalizar Respuesta
+            // ---------------------------------------------------
             Object temp = weatherData.get("temp");
             // A veces viene anidado
             if (temp == null && weatherData.containsKey("main")) {
