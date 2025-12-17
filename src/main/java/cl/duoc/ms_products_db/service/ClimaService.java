@@ -1,6 +1,10 @@
 package cl.duoc.ms_products_db.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -10,40 +14,25 @@ public class ClimaService {
     @Value("${METEORED_API_KEY}")
     private String apiKey;
 
-    @Value("${METEORED_API_URL}")
-    private String apiUrl;
-
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String obtenerClima(String ciudad) {
 
-        String idCiudad = obtenerIdCiudad(ciudad);
+        String searchUrl =
+            "https://api.meteored.com/api/location/v1/search/txt/" + ciudad;
 
-        if (idCiudad == null) {
-            throw new RuntimeException("Ciudad no soportada: " + ciudad);
-        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-API-Key", apiKey);
 
-        String url = apiUrl
-                + "?affiliate_id=" + apiKey
-                + "&localidad=" + idCiudad
-                + "&format=json";
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-        return restTemplate.getForObject(url, String.class);
-    }
+        ResponseEntity<String> response = restTemplate.exchange(
+            searchUrl,
+            HttpMethod.GET,
+            entity,
+            String.class
+        );
 
-    private String obtenerIdCiudad(String ciudad) {
-
-        if (ciudad == null) return null;
-
-        switch (ciudad.toLowerCase()) {
-            case "santiago":
-                return "18578";
-            case "valparaiso":
-                return "18577";
-            case "concepcion":
-                return "18579";
-            default:
-                return null;
-        }
+        return response.getBody();
     }
 }
