@@ -25,7 +25,9 @@ public class ClimaService {
             "https://api.meteored.com/api/location/v1/search/txt/" + ciudad;
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-API-Key", apiKey);
+        headers.set("Authorization", "Bearer " + apiKey);
+        headers.set("Accept", "application/json");
+
 
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
