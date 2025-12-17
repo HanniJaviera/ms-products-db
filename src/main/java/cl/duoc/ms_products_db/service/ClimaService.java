@@ -14,7 +14,7 @@ import java.util.Map;
 @Service
 public class ClimaService {
 
-    @Value("${weather.api.key}")
+    @Value("${weather.api.key:404fe577ee8921c5b902a764daca8b81eed6e5c30f6bf18eee2585a3d7f112d3}")
     private String apiKey;
 
     private final String BASE_URL = "https://api.meteored.com";
@@ -26,77 +26,105 @@ public class ClimaService {
 
         try {
 
-            String ciudadEncoded = URLEncoder.encode(ciudad, StandardCharsets.UTF_8.toString());
+            if (ciudad == null || ciudad.trim().isEmpty()) return null;
+
+
+            String ciudadEncoded = URLEncoder.encode(ciudad.trim(), StandardCharsets.UTF_8.toString());
+
             String searchUrl = String.format("%s/api/location/v1/search/txt/%s?apikey=%s",
                     BASE_URL, ciudadEncoded, apiKey);
 
+            Object respuestaSearch = restTemplate.getForObject(searchUrl, Object.class);
 
-            System.out.println("Backend consultando a Meteored: " + searchUrl);
-
-
-            List<Map<String, Object>> searchResult = (List<Map<String, Object>>) restTemplate.getForObject(searchUrl, List.class);
-
-            if (searchResult == null || searchResult.isEmpty()) {
-                System.out.println("Meteored no encontró la ciudad: " + ciudad);
+            if (!(respuestaSearch instanceof List)) {
+                System.err.println("Error API Search: Respuesta no es una lista válida.");
                 return null;
             }
 
-            Map<String, Object> location = searchResult.get(0);
+            List<Map<String, Object>> listaResultados = (List<Map<String, Object>>) respuestaSearch;
+
+            if (listaResultados.isEmpty()) {
+                System.out.println("No se encontró la locación: " + ciudad);
+                return null;
+            }
+
+            Map<String, Object> primerResultado = listaResultados.get(0);
             
 
-            Object idObj = location.get("id");
-            if (idObj == null) idObj = location.get("key");
-            
-            if (idObj == null) return null;
+            Object idObj = primerResultado.get("id");
+            if (idObj == null) idObj = primerResultado.get("key");
+            if (idObj == null) idObj = primerResultado.get("Key");
 
-            String locationId = idObj.toString();
-            String locationName = (String) location.get("name");
+            if (idObj == null) {
+                System.err.println("Locación encontrada pero sin ID válido.");
+                return null;
+            }
+
+            String idCiudad = idObj.toString();
+            String nombreCiudad = (String) primerResultado.getOrDefault("name", ciudad);
+
+
             String weatherUrl = String.format("%s/api/weather/current/%s?apikey=%s",
-                    BASE_URL, locationId, apiKey);
+                    BASE_URL, idCiudad, apiKey);
 
 
-            Map<String, Object> weatherData = (Map<String, Object>) restTemplate.getForObject(weatherUrl, Map.class);
-            
-            if (weatherData == null) return null;
+            Object respuestaWeather = restTemplate.getForObject(weatherUrl, Object.class);
+            Map<String, Object> datosClima = null;
 
-            Object temp = weatherData.get("temp");
-
-            if (temp == null && weatherData.containsKey("main")) {
-                Map<String, Object> main = (Map<String, Object>) weatherData.get("main");
-                if (main != null) temp = main.get("temp");
+            if (respuestaWeather instanceof List) {
+                List<Map<String, Object>> listaClima = (List<Map<String, Object>>) respuestaWeather;
+                if (!listaClima.isEmpty()) {
+                    datosClima = listaClima.get(0);
+                }
+            } else if (respuestaWeather instanceof Map) {
+                datosClima = (Map<String, Object>) respuestaWeather;
             }
 
-            if (temp == null && weatherData.containsKey("Temperature")) {
-                 Map<String, Object> temperature = (Map<String, Object>) weatherData.get("Temperature");
-                 Map<String, Object> metric = (Map<String, Object>) temperature.get("Metric");
-                 if (metric != null) temp = metric.get("Value");
+            if (datosClima == null) return null;
+
+            Object temp = datosClima.get("temp");
+            if (temp == null && datosClima.containsKey("main")) {
+                temp = ((Map<String, Object>) datosClima.get("main")).get("temp");
+            }
+            if (temp == null && datosClima.containsKey("Temperature")) {
+                Map<String, Object> t = (Map<String, Object>) datosClima.get("Temperature");
+                if (t != null) {
+                    Map<String, Object> m = (Map<String, Object>) t.get("Metric");
+                    if (m != null) temp = m.get("Value");
+                }
             }
 
-            String description = (String) weatherData.getOrDefault("weather", "Clima actual");
-            if (weatherData.containsKey("WeatherText")) {
-                description = (String) weatherData.get("WeatherText");
+
+            String desc = (String) datosClima.getOrDefault("weather", "Clima actual");
+            if (datosClima.containsKey("WeatherText")) {
+                desc = (String) datosClima.get("WeatherText");
+            } else if (datosClima.containsKey("weather") && datosClima.get("weather") instanceof List) {
+                 List<?> wList = (List<?>) datosClima.get("weather");
+                 if (!wList.isEmpty() && wList.get(0) instanceof Map) {
+                     desc = (String) ((Map<?,?>) wList.get(0)).getOrDefault("description", desc);
+                 }
             }
 
-            Object icon = weatherData.getOrDefault("symbol", "01d");
-            if (weatherData.containsKey("WeatherIcon")) {
-                icon = weatherData.get("WeatherIcon");
-            }
+
+            Object icon = datosClima.getOrDefault("icon", "01d");
+            if (datosClima.containsKey("WeatherIcon")) icon = datosClima.get("WeatherIcon");
 
 
             Map<String, Object> mainBlock = new HashMap<>();
             mainBlock.put("temp", temp != null ? temp : 0);
 
             Map<String, Object> weatherBlock = new HashMap<>();
-            weatherBlock.put("description", description);
+            weatherBlock.put("description", desc);
             weatherBlock.put("icon", icon);
 
-            respuestaFinal.put("name", locationName);
+            respuestaFinal.put("name", nombreCiudad);
             respuestaFinal.put("main", mainBlock);
             respuestaFinal.put("weather", Collections.singletonList(weatherBlock));
 
             return respuestaFinal;
 
         } catch (Exception e) {
+            System.err.println("Error en ClimaService: " + e.getMessage());
             e.printStackTrace();
             return null;
         }
