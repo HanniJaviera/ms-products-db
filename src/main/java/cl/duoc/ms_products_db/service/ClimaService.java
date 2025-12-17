@@ -14,30 +14,31 @@ public class ClimaService {
     @Value("${meteored.api.key}")
     private String apiKey;
 
-    @Value("${meteored.api.url}")
-    private String apiUrl;
-
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String obtenerClima(String ciudad) {
+        try {
+            String searchUrl =
+                "https://api.meteored.com/api/location/v1/search/txt/" + ciudad;
 
-        String searchUrl =
-            "https://api.meteored.com/api/location/v1/search/txt/" + ciudad;
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("X-API-KEY", apiKey);
+            headers.set("Accept", "application/json");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + apiKey);
-        headers.set("Accept", "application/json");
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
 
+            ResponseEntity<String> response = restTemplate.exchange(
+                searchUrl,
+                HttpMethod.GET,
+                entity,
+                String.class
+            );
 
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
+            return response.getBody();
 
-        ResponseEntity<String> response = restTemplate.exchange(
-            searchUrl,
-            HttpMethod.GET,
-            entity,
-            String.class
-        );
-
-        return response.getBody();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "{\"error\":\"Servicio de clima no disponible momentáneamente\"}";
+        }
     }
 }
