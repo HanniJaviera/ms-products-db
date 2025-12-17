@@ -23,7 +23,6 @@ public class VentaDTO {
     @JsonProperty(value = "direccion")
     private String direccion;
 
-
     @JsonProperty(value = "total")
     private Integer total;
 
