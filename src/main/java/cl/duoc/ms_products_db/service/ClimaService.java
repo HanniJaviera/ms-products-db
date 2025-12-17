@@ -30,9 +30,11 @@ public class ClimaService {
 
 
             String ciudadEncoded = URLEncoder.encode(ciudad.trim(), StandardCharsets.UTF_8.toString());
+            
 
             String searchUrl = String.format("%s/api/location/v1/search/txt/%s?apikey=%s",
                     BASE_URL, ciudadEncoded, apiKey);
+
 
             Object respuestaSearch = restTemplate.getForObject(searchUrl, Object.class);
 
@@ -48,6 +50,7 @@ public class ClimaService {
                 return null;
             }
 
+
             Map<String, Object> primerResultado = listaResultados.get(0);
             
 
@@ -61,12 +64,15 @@ public class ClimaService {
             }
 
             String idCiudad = idObj.toString();
-            String nombreCiudad = (String) primerResultado.getOrDefault("name", ciudad);
+            
 
+            String nombreCiudad = ciudad;
+            if (primerResultado.get("name") != null) {
+                nombreCiudad = (String) primerResultado.get("name");
+            }
 
             String weatherUrl = String.format("%s/api/weather/current/%s?apikey=%s",
                     BASE_URL, idCiudad, apiKey);
-
 
             Object respuestaWeather = restTemplate.getForObject(weatherUrl, Object.class);
             Map<String, Object> datosClima = null;
@@ -82,6 +88,7 @@ public class ClimaService {
 
             if (datosClima == null) return null;
 
+    
             Object temp = datosClima.get("temp");
             if (temp == null && datosClima.containsKey("main")) {
                 temp = ((Map<String, Object>) datosClima.get("main")).get("temp");
@@ -95,20 +102,29 @@ public class ClimaService {
             }
 
 
-            String desc = (String) datosClima.getOrDefault("weather", "Clima actual");
+            String desc = "Clima actual";
+            if (datosClima.get("weather") != null && datosClima.get("weather") instanceof String) {
+                desc = (String) datosClima.get("weather");
+            }
+
             if (datosClima.containsKey("WeatherText")) {
                 desc = (String) datosClima.get("WeatherText");
             } else if (datosClima.containsKey("weather") && datosClima.get("weather") instanceof List) {
                  List<?> wList = (List<?>) datosClima.get("weather");
                  if (!wList.isEmpty() && wList.get(0) instanceof Map) {
-                     desc = (String) ((Map<?,?>) wList.get(0)).getOrDefault("description", desc);
+                     Map<?,?> wMap = (Map<?,?>) wList.get(0);
+                     if (wMap.get("description") != null) {
+                         desc = (String) wMap.get("description");
+                     }
                  }
             }
 
 
-            Object icon = datosClima.getOrDefault("icon", "01d");
+            Object icon = "01d";
+            if (datosClima.get("icon") != null) {
+                icon = datosClima.get("icon");
+            }
             if (datosClima.containsKey("WeatherIcon")) icon = datosClima.get("WeatherIcon");
-
 
             Map<String, Object> mainBlock = new HashMap<>();
             mainBlock.put("temp", temp != null ? temp : 0);
