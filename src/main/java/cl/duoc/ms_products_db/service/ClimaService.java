@@ -1,5 +1,8 @@
 package cl.duoc.ms_products_db.service;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,29 +19,51 @@ public class ClimaService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public String obtenerClima(String ciudad) {
-        try {
-            String searchUrl =
-                "https://api.meteored.com/api/location/v1/search/txt/" + ciudad;
+    public Double obtenerTemperaturaActual(String ciudad) {
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("X-API-KEY", apiKey);
-            headers.set("Accept", "application/json");
+        // 1️⃣ Buscar ciudad → HASH
+        String searchUrl =
+            "https://api.meteored.com/api/location/v1/search/txt/" + ciudad;
 
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + apiKey);
+        headers.set("Accept", "application/json");
 
-            ResponseEntity<String> response = restTemplate.exchange(
-                searchUrl,
-                HttpMethod.GET,
-                entity,
-                String.class
-            );
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-            return response.getBody();
+        ResponseEntity<Map> searchResponse = restTemplate.exchange(
+            searchUrl,
+            HttpMethod.GET,
+            entity,
+            Map.class
+        );
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "{\"error\":\"Servicio de clima no disponible momentáneamente\"}";
+        Map data = (Map) searchResponse.getBody().get("data");
+        List locations = (List) data.get("locations");
+
+        if (locations.isEmpty()) {
+            throw new RuntimeException("Ciudad no encontrada");
         }
+
+        Map firstLocation = (Map) locations.get(0);
+        String hash = (String) firstLocation.get("hash");
+
+        // 2️⃣ Clima por hash
+        String climaUrl =
+            "https://api.meteored.com/api/forecast/v1/hourly/" + hash;
+
+        ResponseEntity<Map> climaResponse = restTemplate.exchange(
+            climaUrl,
+            HttpMethod.GET,
+            entity,
+            Map.class
+        );
+
+        Map climaData = (Map) climaResponse.getBody().get("data");
+        List hours = (List) climaData.get("hours");
+
+        Map firstHour = (Map) hours.get(0);
+
+        return Double.valueOf(firstHour.get("temperature").toString());
     }
 }

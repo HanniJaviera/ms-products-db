@@ -10,21 +10,21 @@ import cl.duoc.ms_products_db.service.ClimaService;
 
 @RestController
 @RequestMapping("/clima")
-@CrossOrigin(origins = "*")
 public class ClimaController {
 
     @Autowired
     private ClimaService climaService;
 
     @GetMapping
-    public ResponseEntity<?> clima(@RequestParam String ciudad) {
+    public ResponseEntity<?> obtenerClima(@RequestParam String ciudad) {
         try {
-            return ResponseEntity.ok(climaService.obtenerClima(ciudad));
+            Double temp = climaService.obtenerTemperaturaActual(ciudad);
+            return ResponseEntity.ok(temp);
         } catch (Exception e) {
-            e.printStackTrace(); // IMPORTANTE para logs
             return ResponseEntity
-                    .status(HttpStatus.SERVICE_UNAVAILABLE)
-                    .body("Servicio de clima no disponible");
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body("Servicio de clima no disponible");
         }
     }
 }
+
